@@ -15,8 +15,9 @@ that we can just write PC side script to write UIAutomator tests.
 - Install Ant if you have not.
 - Run command:
 
-    $ and build # compile
-    $ and install # install jar file to device via adb
+
+    	$ and build # compile
+    	$ and install # install jar file to device via adb
 
 # Run the jsonrcp server on Android device
 
