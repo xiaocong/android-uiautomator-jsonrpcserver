@@ -23,7 +23,7 @@ public class Stub extends UiAutomatorTestCase {
 		super.setUp();
 		server = new AutomatorHttpServer(PORT);
 		server.route("/jsonrpc/device", new JsonRpcServer(new ObjectMapper(),
-				new AutomatorServiceImpl(this), AutomatorService.class));
+				new AutomatorServiceImpl(), AutomatorService.class));
 		server.start();
 	}
 

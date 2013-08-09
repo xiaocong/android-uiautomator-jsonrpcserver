@@ -1,5 +1,7 @@
 package com.github.uiautomatorstub;
 
+import com.android.uiautomator.core.UiSelector;
+
 public class Selector {
 	private String _text;
 	private String _className;
@@ -22,4 +24,16 @@ public class Selector {
 	public void setDescription(String description) {
 		this._description = description;
 	}
+
+	public UiSelector toUiSelector() {
+		UiSelector s = new UiSelector();
+		if (getText() != null && getText() != "")
+			s = s.text(getText());
+		if (getClassName() != null && getClassName() != "")
+			s = s.className(getClassName());
+		if (getDescription() != null && getDescription() != "")
+			s = s.description(getDescription());
+
+		return s;
+	} 
 }
