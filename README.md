@@ -22,7 +22,7 @@ that we can just write PC side script to write UIAutomator tests.
 # Run the jsonrcp server on Android device
 
 	adb shell uiautomator runtest  uiautomator-stub.jar bundle.jar -c com.github.uiautomatorstub.Stub
-	adb forward tcp:8009 tcp:8009 # tcp forward
+	adb forward tcp:9008 tcp:9008 # tcp forward
 
 # How to use
 
