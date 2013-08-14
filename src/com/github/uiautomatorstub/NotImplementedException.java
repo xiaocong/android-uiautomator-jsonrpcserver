@@ -13,4 +13,8 @@ public class NotImplementedException extends Exception {
     public NotImplementedException() {
         super("This method is not yet implemented in API level " + Build.VERSION.SDK_INT + ".");
     }
+
+    public NotImplementedException(String method) {
+        super(method + " is not yet implemented in API level " + Build.VERSION.SDK_INT + ".");
+    }
 }

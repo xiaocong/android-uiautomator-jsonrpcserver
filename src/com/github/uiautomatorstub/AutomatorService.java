@@ -85,7 +85,7 @@ public interface AutomatorService {
 
     /**
      * Simulates orienting the device to the left/right/natural and also freezes rotation by disabling the sensors.
-     * @param dir Left or l, Right or r, Natural or r, case insensitive
+     * @param dir Left or l, Right or r, Natural or n, case insensitive
      * @throws RemoteException
      * @throws NotImplementedException
      */
@@ -128,7 +128,7 @@ public interface AutomatorService {
 
     /**
      * Simulates a short press using key name.
-     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps)
+     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), voulmn_up, volumn_down, volumn_mute, camera, power
      * @return true if successful, else return false
      * @throws RemoteException
      */
@@ -215,7 +215,7 @@ public interface AutomatorService {
      * @throws UiObjectNotFoundException
      */
     @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
-    String setText(Selector obj, String text) throws UiObjectNotFoundException;
+    boolean setText(Selector obj, String text) throws UiObjectNotFoundException;
 
 	/**
 	 * Performs a click at the center of the visible bounds of the UI element represented by this UiObject.
@@ -474,11 +474,9 @@ public interface AutomatorService {
      * @param obj the selector of the scrollable object
      * @param targetObj the item matches the selector to be found.
      * @param isVertical vertical or horizontal
-     * @param maxSwipes max swipes to be performed.
-     * @param steps use steps to control the speed, so that it may be a scroll, or fling
      * @return true on scrolled, else false
      * @throws UiObjectNotFoundException
      */
     @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
-    boolean scrollTo (Selector obj, Selector targetObj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException;
+    boolean scrollTo (Selector obj, Selector targetObj, boolean isVertical) throws UiObjectNotFoundException;
 }

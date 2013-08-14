@@ -51,4 +51,8 @@ public class Rect {
     public void setRight(int right) {
         this._right = right;
     }
+
+    public android.graphics.Rect toRect() {
+        return new android.graphics.Rect(_left, _top, _right, _bottom);
+    }
 }

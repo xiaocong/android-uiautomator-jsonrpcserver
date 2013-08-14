@@ -29,6 +29,10 @@ public class Point {
         this._y = y;
     }
 
+    public android.graphics.Point toPoint() {
+        return new android.graphics.Point(_x, _y);
+    }
+
     private int _x;
     private int _y;
 }

@@ -2,11 +2,11 @@ package com.github.uiautomatorstub;
 
 import android.os.Build;
 import android.os.RemoteException;
+import java.io.File;
+import java.io.IOException;
 
-import com.android.uiautomator.core.UiObject;
-import com.android.uiautomator.core.UiDevice;
-import com.android.uiautomator.core.UiObjectNotFoundException;
-import com.android.uiautomator.core.UiSelector;
+import android.view.KeyEvent;
+import com.android.uiautomator.core.*;
 
 
 public class AutomatorServiceImpl implements AutomatorService {
@@ -90,12 +90,15 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @return the absolute path name of dumped file.
      */
     @Override
-    public String dumpWindowHierarchy(boolean compressed, String fileName) {
+    public String dumpWindowHierarchy(boolean compressed, String filename) {
         if (Build.VERSION.SDK_INT >= 18)
             UiDevice.getInstance().setCompressedLayoutHeirarchy(compressed);
-        //UiDevice.getInstance().dumpWindowHierarchy(fileName);
-        return null
-        //To change body of implemented methods use File | Settings | File Templates.
+        UiDevice.getInstance().dumpWindowHierarchy(filename);
+        File f = new File(STORAGE_PATH, filename);
+        if (f.exists())
+            return f.getAbsolutePath();
+        else
+            return null;
     }
 
     /**
@@ -110,7 +113,13 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public String takeScreenshot(String filename, float scale, int quality) throws NotImplementedException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 17)
+            throw new NotImplementedException("takeScreenshot");
+        File f = new File(STORAGE_PATH, filename);
+        UiDevice.getInstance().takeScreenshot(f, scale, quality);
+        if (f.exists())
+            return f.getAbsolutePath();
+        return null;
     }
 
     /**
@@ -121,20 +130,31 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public void freezeRotation(boolean freeze) throws RemoteException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (freeze)
+            UiDevice.getInstance().freezeRotation();
+        else
+            UiDevice.getInstance().unfreezeRotation();
     }
 
     /**
      * Simulates orienting the device to the left/right/natural and also freezes rotation by disabling the sensors.
      *
-     * @param dir Left or l, Right or r, Natural or r, case insensitive
+     * @param dir Left or l, Right or r, Natural or n, case insensitive
      * @throws android.os.RemoteException
      * @throws com.github.uiautomatorstub.NotImplementedException
      *
      */
     @Override
     public void setOrientation(String dir) throws RemoteException, NotImplementedException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 17)
+            throw new NotImplementedException("setOrientation");
+        dir = dir.toLowerCase();
+        if ("left".equals(dir) || "l".equals(dir))
+            UiDevice.getInstance().setOrientationLeft();
+        else if ("right".equals(dir) || "r".equals(dir))
+            UiDevice.getInstance().setOrientationRight();
+        else if ("natural".equals(dir) || "n".equals(dir))
+            UiDevice.getInstance().setOrientationNatural();
     }
 
     /**
@@ -144,7 +164,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public String getLastTraversedText() {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return UiDevice.getInstance().getLastTraversedText();
     }
 
     /**
@@ -152,7 +172,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public void clearLastTraversedText() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        UiDevice.getInstance().clearLastTraversedText();
     }
 
     /**
@@ -164,7 +184,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean openNotification() throws NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("openNotification");
+        return UiDevice.getInstance().openNotification();
     }
 
     /**
@@ -176,7 +198,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean openQuickSettings() throws NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("openQuickSettings");
+        return UiDevice.getInstance().openQuickSettings();
     }
 
     /**
@@ -187,13 +211,13 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean hasWatcherTriggered(String watcherName) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return UiDevice.getInstance().hasWatcherTriggered(watcherName);
     }
 
     /**
      * Simulates a short press using key name.
      *
-     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps)
+     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), voulmn_up, volumn_down, volumn_mute, camera, power
      * @return true if successful, else return false
      * @throws android.os.RemoteException
      */
@@ -225,6 +249,16 @@ public class AutomatorServiceImpl implements AutomatorService {
             result = UiDevice.getInstance().pressDelete();
         else if ("recent".equals(key))
             result = UiDevice.getInstance().pressRecentApps();
+        else if ("volumn_up".equals(key))
+            result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_UP);
+        else if ("volumn_down".equals(key))
+            result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_DOWN);
+        else if ("volumn_mute".equals(key))
+            result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_MUTE);
+        else if ("camera".equals(key))
+            result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_CAMERA);
+        else if ("power".equals(key))
+            result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_POWER);
         else
             result = false;
 
@@ -239,7 +273,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pressKeyCode(int keyCode) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return UiDevice.getInstance().pressKeyCode(keyCode);
     }
 
     /**
@@ -251,7 +285,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pressKeyCode(int keyCode, int metaState) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return UiDevice.getInstance().pressKeyCode(keyCode, metaState);
     }
 
     /**
@@ -304,7 +338,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean waitForWindowUpdate(String packageName, long timeout) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return UiDevice.getInstance().waitForWindowUpdate(packageName, timeout);
     }
 
     /**
@@ -316,7 +350,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public void clearTextField(Selector obj) throws UiObjectNotFoundException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        new UiObject(obj.toUiSelector()).clearTextField();
     }
 
     /**
@@ -329,7 +363,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public String getText(Selector obj) throws UiObjectNotFoundException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+        return new UiObject(obj.toUiSelector()).getText();
     }
 
     /**
@@ -342,8 +376,8 @@ public class AutomatorServiceImpl implements AutomatorService {
      *
      */
     @Override
-    public String setText(Selector obj, String text) throws UiObjectNotFoundException {
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public boolean setText(Selector obj, String text) throws UiObjectNotFoundException {
+        return new UiObject(obj.toUiSelector()).setText(text);
     }
 
     /**
@@ -370,7 +404,16 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean click(Selector obj, String corner) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (corner == null)
+            corner = "center";
+        corner = corner.toLowerCase();
+        if ("br".equals(corner) || "bottomright".equals(corner))
+            return new UiObject(obj.toUiSelector()).clickBottomRight();
+        else if ("tl".equals(corner) || "topleft".equals(corner))
+            return new UiObject(obj.toUiSelector()).clickTopLeft();
+        else  if ("c".equals(corner) || "center".equals(corner))
+            return new UiObject(obj.toUiSelector()).click();
+        return false;
     }
 
     /**
@@ -387,7 +430,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean clickAndWaitForNewWindow(Selector obj, long timeout) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return new UiObject(obj.toUiSelector()).clickAndWaitForNewWindow(timeout);
     }
 
     /**
@@ -415,14 +458,14 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean longClick(Selector obj, String corner) throws UiObjectNotFoundException {
         if (corner == null)
-            return new UiObject(obj.toUiSelector()).longClick();
+            corner = "center";
 
         corner = corner.toLowerCase();
         if ("br".equals(corner) || "bottomright".equals(corner))
             return new UiObject(obj.toUiSelector()).longClickBottomRight();
         else if ("tl".equals(corner) || "topleft".equals(corner))
             return new UiObject(obj.toUiSelector()).longClickTopLeft();
-        else if ("center".equals(corner))
+        else if ("c".equals(corner) || "center".equals(corner))
             return new UiObject(obj.toUiSelector()).longClick();
 
         return false;
@@ -442,7 +485,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean dragTo(Selector obj, Selector destObj, int steps) throws UiObjectNotFoundException, NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("dragTo");
+        return new UiObject(obj.toUiSelector()).dragTo(new UiObject(destObj.toUiSelector()), steps);
     }
 
     /**
@@ -460,7 +505,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean dragTo(Selector obj, int destX, int destY, int steps) throws UiObjectNotFoundException, NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("dragTo");
+        return new UiObject(obj.toUiSelector()).dragTo(destX, destY, steps);
     }
 
     /**
@@ -502,7 +549,11 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean gesture(Selector obj, Point startPoint1, Point startPoint2, Point endPoint1, Point endPoint2, int steps) throws UiObjectNotFoundException, NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("gesture(performTwoPointerGesture)");
+        return new UiObject(obj.toUiSelector()).performTwoPointerGesture(
+                startPoint1.toPoint(), startPoint2.toPoint(),
+                endPoint1.toPoint(), endPoint2.toPoint(), steps);
     }
 
     /**
@@ -519,7 +570,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pinchIn(Selector obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("pinchIn");
+        return new UiObject(obj.toUiSelector()).pinchIn(percent, steps);
     }
 
     /**
@@ -536,7 +589,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pinchOut(Selector obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("pinchOut");
+        return new UiObject(obj.toUiSelector()).pinchOut(percent, steps);
     }
 
     /**
@@ -574,7 +629,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean waitForExists(Selector obj, long timeout) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return new UiObject(obj.toUiSelector()).waitForExists(timeout);
     }
 
     /**
@@ -586,12 +641,11 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean waitUntilGone(Selector obj, long timeout) {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        return new UiObject(obj.toUiSelector()).waitUntilGone(timeout);
     }
 
     /**
      * Performs a backwards fling action with the default number of fling steps (5). If the swipe direction is set to vertical, then the swipe will be performed from top to bottom. If the swipe direction is set to horizontal, then the swipes will be performed from left to right. Make sure to take into account devices configured with right-to-left languages like Arabic and Hebrew.
-     *
      * @param obj        the selector of the scrollable object
      * @param isVertical vertical or horizontal
      * @return true if scrolled, and false if can't scroll anymore
@@ -600,12 +654,16 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean flingBackward(Selector obj, boolean isVertical) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.flingBackward();
     }
 
     /**
      * Performs a forward fling with the default number of fling steps (5). If the swipe direction is set to vertical, then the swipes will be performed from bottom to top. If the swipe direction is set to horizontal, then the swipes will be performed from right to left. Make sure to take into account devices configured with right-to-left languages like Arabic and Hebrew.
-     *
      * @param obj        the selector of the scrollable object
      * @param isVertical vertical or horizontal
      * @return true if scrolled, and false if can't scroll anymore
@@ -614,7 +672,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean flingForward(Selector obj, boolean isVertical) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.flingForward();
     }
 
     /**
@@ -629,7 +692,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean flingToBeginning(Selector obj, boolean isVertical, int maxSwipes) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.flingToBeginning(maxSwipes);
     }
 
     /**
@@ -644,7 +712,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean flingToEnd(Selector obj, boolean isVertical, int maxSwipes) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.flingToEnd(maxSwipes);
     }
 
     /**
@@ -659,7 +732,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean scrollBackward(Selector obj, boolean isVertical, int steps) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.scrollBackward(steps);
     }
 
     /**
@@ -674,7 +752,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean scrollForward(Selector obj, boolean isVertical, int steps) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.scrollForward(steps);
     }
 
     /**
@@ -690,7 +773,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean scrollToBeginning(Selector obj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.scrollToBeginning(maxSwipes, steps);
     }
 
     /**
@@ -706,7 +794,12 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean scrollToEnd(Selector obj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.scrollToEnd(maxSwipes, steps);
     }
 
     /**
@@ -715,14 +808,17 @@ public class AutomatorServiceImpl implements AutomatorService {
      * @param obj        the selector of the scrollable object
      * @param targetObj  the item matches the selector to be found.
      * @param isVertical vertical or horizontal
-     * @param maxSwipes  max swipes to be performed.
-     * @param steps      use steps to control the speed, so that it may be a scroll, or fling
      * @return true on scrolled, else false
      * @throws com.android.uiautomator.core.UiObjectNotFoundException
      *
      */
     @Override
-    public boolean scrollTo(Selector obj, Selector targetObj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException {
-        return false;  //To change body of implemented methods use File | Settings | File Templates.
+    public boolean scrollTo(Selector obj, Selector targetObj, boolean isVertical) throws UiObjectNotFoundException {
+        UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
+        if (isVertical)
+            scrollable.setAsVerticalList();
+        else
+            scrollable.setAsHorizontalList();
+        return scrollable.scrollIntoView(targetObj.toUiSelector());
     }
 }
