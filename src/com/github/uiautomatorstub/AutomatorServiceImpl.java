@@ -4,6 +4,7 @@ import android.os.Build;
 import android.os.RemoteException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import android.view.KeyEvent;
 import com.android.uiautomator.core.*;
@@ -12,6 +13,42 @@ import com.android.uiautomator.core.*;
 public class AutomatorServiceImpl implements AutomatorService {
 
     final static String STORAGE_PATH = "/data/local/tmp/";
+
+    /**
+     * Walk around to avoid backforward compatibility issue on uiautomator between api level 16/17.
+     */
+    final static void setAsHorizontalList(UiScrollable obj) {
+        Class noparams[] = {};
+        try {
+            Class.forName("com.android.uiautomator.core.UiScrollable").getDeclaredMethod("setAsHorizontalList", noparams).invoke(obj, null);
+        } catch (NoSuchMethodException e) {
+            Log.d(e.getMessage());
+        } catch (ClassNotFoundException e) {
+            Log.d(e.getMessage());
+        } catch (InvocationTargetException e) {
+            Log.d(e.getMessage());
+        } catch (IllegalAccessException e) {
+            Log.d(e.getMessage());
+        }
+    }
+
+    /**
+     * Walk around to avoid backforward compatibility issue on uiautomator between api level 16/17.
+     */
+    final static void setAsVerticalList(UiScrollable obj) {
+        Class noparams[] = {};
+        try {
+            Class.forName("com.android.uiautomator.core.UiScrollable").getDeclaredMethod("setAsVerticalList", noparams).invoke(obj, null);
+        } catch (NoSuchMethodException e) {
+            Log.d(e.getMessage());
+        } catch (ClassNotFoundException e) {
+            Log.d(e.getMessage());
+        } catch (InvocationTargetException e) {
+            Log.d(e.getMessage());
+        } catch (IllegalAccessException e) {
+            Log.d(e.getMessage());
+        }
+    }
 
 	public AutomatorServiceImpl() {
 	}
@@ -86,7 +123,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     /**
      * Helper method used for debugging to dump the current window's layout hierarchy. The file root location is /data/local/tmp
      * @param compressed use compressed layout hierarchy or not using setCompressedLayoutHeirarchy method. Ignore the parameter in case the API level lt 18.
-     * @param fileName   the filename to be stored.
+     * @param filename   the filename to be stored.
      * @return the absolute path name of dumped file.
      */
     @Override
@@ -656,9 +693,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean flingBackward(Selector obj, boolean isVertical) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.flingBackward();
     }
 
@@ -674,9 +711,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean flingForward(Selector obj, boolean isVertical) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.flingForward();
     }
 
@@ -694,9 +731,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean flingToBeginning(Selector obj, boolean isVertical, int maxSwipes) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.flingToBeginning(maxSwipes);
     }
 
@@ -714,9 +751,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean flingToEnd(Selector obj, boolean isVertical, int maxSwipes) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.flingToEnd(maxSwipes);
     }
 
@@ -734,9 +771,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean scrollBackward(Selector obj, boolean isVertical, int steps) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.scrollBackward(steps);
     }
 
@@ -754,9 +791,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean scrollForward(Selector obj, boolean isVertical, int steps) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.scrollForward(steps);
     }
 
@@ -775,9 +812,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean scrollToBeginning(Selector obj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.scrollToBeginning(maxSwipes, steps);
     }
 
@@ -796,9 +833,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean scrollToEnd(Selector obj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.scrollToEnd(maxSwipes, steps);
     }
 
@@ -816,9 +853,9 @@ public class AutomatorServiceImpl implements AutomatorService {
     public boolean scrollTo(Selector obj, Selector targetObj, boolean isVertical) throws UiObjectNotFoundException {
         UiScrollable scrollable = new UiScrollable(obj.toUiSelector());
         if (isVertical)
-            scrollable.setAsVerticalList();
+            setAsVerticalList(scrollable);
         else
-            scrollable.setAsHorizontalList();
+            setAsHorizontalList(scrollable);
         return scrollable.scrollIntoView(targetObj.toUiSelector());
     }
 }

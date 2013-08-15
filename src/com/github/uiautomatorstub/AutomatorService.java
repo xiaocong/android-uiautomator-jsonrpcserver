@@ -59,10 +59,10 @@ public interface AutomatorService {
     /**
      * Helper method used for debugging to dump the current window's layout hierarchy. The file root location is /data/local/tmp
      * @param compressed use compressed layout hierarchy or not using setCompressedLayoutHeirarchy method. Ignore the parameter in case the API level lt 18.
-     * @param fileName the filename to be stored.
+     * @param filename the filename to be stored.
      * @return the absolute path name of dumped file.
      */
-    String dumpWindowHierarchy(boolean compressed, String fileName);
+    String dumpWindowHierarchy(boolean compressed, String filename);
 
     /**
      * Take a screenshot of current window and store it as PNG The screenshot is adjusted per screen rotation
