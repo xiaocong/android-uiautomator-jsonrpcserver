@@ -15,7 +15,7 @@ public class ObjInfo {
     }
 
 	private ObjInfo(UiObject obj) throws UiObjectNotFoundException {
-		this._bounds = new Rect(obj.getBounds());
+		this._bounds = Rect.from(obj.getBounds());
 		this._checkable = obj.isCheckable();
 		this._checked = obj.isChecked();
 		this._chileCount = obj.getChildCount();
@@ -30,7 +30,7 @@ public class ObjInfo {
 		this._selected = obj.isSelected();
 		this._text = obj.getText();
 		if (android.os.Build.VERSION.SDK_INT >= 17) {
-			this._visibleBounds = new Rect(obj.getVisibleBounds());
+			this._visibleBounds = Rect.from(obj.getVisibleBounds());
 		}
 		if (android.os.Build.VERSION.SDK_INT >= 18) {
 			this._className = obj.getClassName();
