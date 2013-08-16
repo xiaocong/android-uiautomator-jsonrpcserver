@@ -13,13 +13,6 @@ public class Rect {
     private int _left;
     private int _right;
 
-    public Rect(android.graphics.Rect rect) {
-        this._bottom = rect.bottom;
-        this._top = rect.top;
-        this._right = rect.right;
-        this._left = rect.left;
-    }
-
     public int getTop() {
         return _top;
     }

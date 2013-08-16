@@ -8,6 +8,9 @@ package com.github.uiautomatorstub;
  * To change this template use File | Settings | File Templates.
  */
 public class Point {
+    private int _x;
+    private int _y;
+
     public int getX() {
         return _x;
     }
@@ -24,15 +27,7 @@ public class Point {
         this._y = y;
     }
 
-    public Point(int x, int y) {
-        this._x = x;
-        this._y = y;
-    }
-
     public android.graphics.Point toPoint() {
         return new android.graphics.Point(_x, _y);
     }
-
-    private int _x;
-    private int _y;
 }
