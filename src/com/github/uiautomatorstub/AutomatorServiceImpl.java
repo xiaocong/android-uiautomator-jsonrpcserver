@@ -1,9 +1,9 @@
 package com.github.uiautomatorstub;
 
 import android.os.Build;
+import android.os.Environment;
 import android.os.RemoteException;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
 import android.view.KeyEvent;
@@ -130,10 +130,16 @@ public class AutomatorServiceImpl implements AutomatorService {
     public String dumpWindowHierarchy(boolean compressed, String filename) {
         if (Build.VERSION.SDK_INT >= 18)
             UiDevice.getInstance().setCompressedLayoutHeirarchy(compressed);
+        File parent = new File(Environment.getDataDirectory(), "local/tmp"); // Environment.getDataDirectory() return /data/local/tmp in android 4.3 but not expected /data
+        if (!parent.exists())
+            parent.mkdirs();
+        File dumpFile = new File(parent, filename).getAbsoluteFile();
         UiDevice.getInstance().dumpWindowHierarchy(filename);
-        File f = new File(STORAGE_PATH, filename);
+        File f = new File(STORAGE_PATH, filename); // It should be this...
         if (f.exists())
             return f.getAbsolutePath();
+        else if (dumpFile.exists())
+            return dumpFile.getAbsolutePath();
         else
             return null;
     }
