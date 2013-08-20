@@ -19,8 +19,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     final static void setAsHorizontalList(UiScrollable obj) {
         Class noparams[] = {};
+        Object nullparmas[] = {};
         try {
-            Class.forName("com.android.uiautomator.core.UiScrollable").getDeclaredMethod("setAsHorizontalList", noparams).invoke(obj, null);
+            Class.forName("com.android.uiautomator.core.UiScrollable").getDeclaredMethod("setAsHorizontalList", noparams).invoke(obj, nullparmas);
         } catch (NoSuchMethodException e) {
             Log.d(e.getMessage());
         } catch (ClassNotFoundException e) {
@@ -37,8 +38,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     final static void setAsVerticalList(UiScrollable obj) {
         Class noparams[] = {};
+        Object nullparmas[] = {};
         try {
-            Class.forName("com.android.uiautomator.core.UiScrollable").getDeclaredMethod("setAsVerticalList", noparams).invoke(obj, null);
+            Class.forName("com.android.uiautomator.core.UiScrollable").getDeclaredMethod("setAsVerticalList", noparams).invoke(obj, nullparmas);
         } catch (NoSuchMethodException e) {
             Log.d(e.getMessage());
         } catch (ClassNotFoundException e) {
