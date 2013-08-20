@@ -3,11 +3,11 @@ package com.github.uiautomatorstub;
 import android.os.RemoteException;
 
 import com.android.uiautomator.core.UiObjectNotFoundException;
-import com.googlecode.jsonrpc4j.JsonRpcParam;
 import com.googlecode.jsonrpc4j.JsonRpcErrors;
 import com.googlecode.jsonrpc4j.JsonRpcError;
 
 public interface AutomatorService {
+    final static int ERROR_CODE_BASE = -32000;
     /**
      * It's to test if the service is alive.
      * @return 'pong'
@@ -42,7 +42,7 @@ public interface AutomatorService {
      * @return true if swipe is performed, false if the operation fails or the coordinates are invalid
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean drag(int startX, int startY, int endX, int endY, int steps) throws NotImplementedException;
 
     /**
@@ -72,7 +72,7 @@ public interface AutomatorService {
      * @return the file name of the screenshot. null if failed.
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	String takeScreenshot(String filename, float scale, int quality) throws NotImplementedException;
 
     /**
@@ -80,7 +80,7 @@ public interface AutomatorService {
      * @param freeze true to freeze the rotation, false to unfreeze the rotation.
      * @throws RemoteException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=-1)})
+    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=ERROR_CODE_BASE-1)})
 	void freezeRotation(boolean freeze) throws RemoteException;  // freeze or unfreeze rotation, see also unfreezeRotation()
 
     /**
@@ -89,7 +89,7 @@ public interface AutomatorService {
      * @throws RemoteException
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=-1), @JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=ERROR_CODE_BASE-1), @JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	void setOrientation(String dir) throws RemoteException, NotImplementedException;
 
     /**
@@ -108,7 +108,7 @@ public interface AutomatorService {
      * @return true if successful, else return false
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean openNotification() throws NotImplementedException;
 
     /**
@@ -116,7 +116,7 @@ public interface AutomatorService {
      * @return true if successful, else return false
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean openQuickSettings() throws NotImplementedException;
 
     /**
@@ -132,7 +132,7 @@ public interface AutomatorService {
      * @return true if successful, else return false
      * @throws RemoteException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=-1)})
+    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=ERROR_CODE_BASE-1)})
 	boolean pressKey(String key) throws RemoteException;
 
     /**
@@ -154,14 +154,14 @@ public interface AutomatorService {
      * This method simulates pressing the power button if the screen is OFF else it does nothing if the screen is already ON. If the screen was OFF and it just got turned ON, this method will insert a 500ms delay to allow the device time to wake up and accept input.
      * @throws RemoteException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=-1)})
+    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=ERROR_CODE_BASE-1)})
 	void wakeUp() throws RemoteException;
 
     /**
      * This method simply presses the power button if the screen is ON else it does nothing if the screen is already OFF.
      * @throws RemoteException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=-1)})
+    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=ERROR_CODE_BASE-1)})
 	void sleep() throws RemoteException;
 
     /**
@@ -169,7 +169,7 @@ public interface AutomatorService {
      * @return true if the screen is ON else false
      * @throws RemoteException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=-1)})
+    @JsonRpcErrors({@JsonRpcError(exception=RemoteException.class, code=ERROR_CODE_BASE-1)})
 	boolean isScreenOn() throws RemoteException;
 
     /**
@@ -195,7 +195,7 @@ public interface AutomatorService {
      * @param obj the selector of the UiObject.
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	void clearTextField(Selector obj) throws UiObjectNotFoundException;
 
     /**
@@ -204,7 +204,7 @@ public interface AutomatorService {
      * @return text value of the current node represented by this UiObject
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     String getText(Selector obj) throws UiObjectNotFoundException;
 
     /**
@@ -214,7 +214,7 @@ public interface AutomatorService {
      * @return true if operation is successful
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean setText(Selector obj, String text) throws UiObjectNotFoundException;
 
 	/**
@@ -223,7 +223,7 @@ public interface AutomatorService {
 	 * @return true id successful else false
 	 * @throws UiObjectNotFoundException
 	 */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean click(Selector obj) throws UiObjectNotFoundException;
 
     /**
@@ -233,7 +233,7 @@ public interface AutomatorService {
 	 * @return true on success
 	 * @throws UiObjectNotFoundException
 	 */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean click(Selector obj, String corner) throws UiObjectNotFoundException;
 
     /**
@@ -246,7 +246,7 @@ public interface AutomatorService {
      * @return true if the event was triggered, else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean clickAndWaitForNewWindow(Selector obj, long timeout) throws UiObjectNotFoundException;
 
     /**
@@ -255,7 +255,7 @@ public interface AutomatorService {
      * @return true if operation was successful
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean longClick(Selector obj) throws UiObjectNotFoundException;
 
     /**
@@ -265,7 +265,7 @@ public interface AutomatorService {
      * @return true if operation was successful
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean longClick(Selector obj, String corner) throws UiObjectNotFoundException;
 
     /**
@@ -277,7 +277,7 @@ public interface AutomatorService {
      * @throws UiObjectNotFoundException
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2), @JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2), @JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean dragTo (Selector obj, Selector destObj, int steps) throws UiObjectNotFoundException, NotImplementedException;
 
     /**
@@ -290,7 +290,7 @@ public interface AutomatorService {
      * @throws UiObjectNotFoundException
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2), @JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2), @JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean dragTo (Selector obj, int destX, int destY, int steps) throws UiObjectNotFoundException, NotImplementedException;
 
     /**
@@ -298,7 +298,7 @@ public interface AutomatorService {
      * @param obj the ui object to be dragged.
      * @return true if the view represented by this UiObject does exist
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean exist(Selector obj);
 
     /**
@@ -307,7 +307,7 @@ public interface AutomatorService {
      * @return object info.
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	ObjInfo objInfo(Selector obj) throws UiObjectNotFoundException;
 
     /**
@@ -321,7 +321,7 @@ public interface AutomatorService {
      * @return true if all touch events for this gesture are injected successfully, false otherwise
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2), @JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2), @JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
     boolean gesture(Selector obj, Point startPoint1, Point startPoint2, Point endPoint1, Point endPoint2, int steps) throws UiObjectNotFoundException, NotImplementedException;
 
     /**
@@ -333,7 +333,7 @@ public interface AutomatorService {
      * @throws UiObjectNotFoundException
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2), @JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2), @JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean pinchIn(Selector obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException;
 
     /**
@@ -345,7 +345,7 @@ public interface AutomatorService {
      * @throws UiObjectNotFoundException
      * @throws NotImplementedException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2), @JsonRpcError(exception=NotImplementedException.class, code=-3)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2), @JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
 	boolean pinchOut(Selector obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException;
 
     /**
@@ -356,7 +356,7 @@ public interface AutomatorService {
 	 * @return true of successful
 	 * @throws UiObjectNotFoundException
 	 */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean swipe(Selector obj, String dir, int steps) throws UiObjectNotFoundException;
 
     /**
@@ -365,7 +365,7 @@ public interface AutomatorService {
      * @param timeout time to wait (in milliseconds)
      * @return true if the view is displayed, else false if timeout elapsed while waiting
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean waitForExists (Selector obj, long timeout);
 
     /**
@@ -374,7 +374,7 @@ public interface AutomatorService {
      * @param timeout time to wait (in milliseconds)
      * @return true if the element is gone before timeout elapsed, else false if timeout elapsed but a matching element is still found.
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
 	boolean waitUntilGone (Selector obj, long timeout);
 
     /***************************************************************************
@@ -388,7 +388,7 @@ public interface AutomatorService {
      * @return true if scrolled, and false if can't scroll anymore
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean flingBackward(Selector obj, boolean isVertical) throws UiObjectNotFoundException;
 
     /**
@@ -398,7 +398,7 @@ public interface AutomatorService {
      * @return true if scrolled, and false if can't scroll anymore
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean flingForward(Selector obj, boolean isVertical) throws UiObjectNotFoundException;
 
     /**
@@ -409,7 +409,7 @@ public interface AutomatorService {
      * @return true on scrolled, else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean flingToBeginning (Selector obj, boolean isVertical, int maxSwipes) throws UiObjectNotFoundException;
 
     /**
@@ -420,7 +420,7 @@ public interface AutomatorService {
      * @return true on scrolled, else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean flingToEnd (Selector obj, boolean isVertical, int maxSwipes) throws UiObjectNotFoundException;
 
     /**
@@ -431,7 +431,7 @@ public interface AutomatorService {
      * @return true if scrolled, false if can't scroll anymore
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean scrollBackward (Selector obj, boolean isVertical, int steps) throws UiObjectNotFoundException;
 
     /**
@@ -442,7 +442,7 @@ public interface AutomatorService {
      * @return true on scrolled, else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean scrollForward (Selector obj, boolean isVertical, int steps) throws UiObjectNotFoundException;
 
     /**
@@ -454,7 +454,7 @@ public interface AutomatorService {
      * @return true on scrolled else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean scrollToBeginning (Selector obj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException;
 
     /**
@@ -466,7 +466,7 @@ public interface AutomatorService {
      * @return true on scrolled, else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean scrollToEnd (Selector obj, boolean isVertical, int maxSwipes, int steps) throws UiObjectNotFoundException;
 
     /**
@@ -477,6 +477,6 @@ public interface AutomatorService {
      * @return true on scrolled, else false
      * @throws UiObjectNotFoundException
      */
-    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=-2)})
+    @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean scrollTo (Selector obj, Selector targetObj, boolean isVertical) throws UiObjectNotFoundException;
 }
