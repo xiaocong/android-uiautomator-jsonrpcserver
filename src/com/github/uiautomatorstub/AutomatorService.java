@@ -160,6 +160,11 @@ public interface AutomatorService {
     void resetWatcherTriggers();
 
     /**
+     * Force to run all watchers.
+     */
+    void runWatchers();
+
+    /**
      * Get all registered UiWatchers
      * @return UiWatcher names
      */

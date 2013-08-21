@@ -340,6 +340,14 @@ public class AutomatorServiceImpl implements AutomatorService {
     }
 
     /**
+     * Force to run all watchers.
+     */
+    @Override
+    public void runWatchers() {
+        UiDevice.getInstance().runWatchers();
+    }
+
+    /**
      * Get all registered UiWatchers
      *
      * @return UiWatcher names
