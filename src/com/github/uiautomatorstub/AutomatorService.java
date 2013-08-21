@@ -127,6 +127,45 @@ public interface AutomatorService {
 	boolean hasWatcherTriggered(String watcherName); // We should implement some watchers to treat some blocking issues, e.g. force close dialog
 
     /**
+     * Checks if any registered UiWatcher have triggered.
+     * @return true if any UiWatcher have triggered else false.
+     */
+    boolean hasAnyWatcherTriggered();
+
+    /**
+     * Register a ClickUiObjectWatcher
+     * @param name Watcher name
+     * @param conditions If all UiObject in the conditions match, the watcher should be triggered.
+     * @param target The target UiObject should be clicked if all conditions match.
+     */
+    void registerClickUiObjectWatcher(String name, Selector[] conditions, Selector target);
+
+    /**
+     * Register a PressKeysWatcher
+     * @param name Watcher name
+     * @param conditions If all UiObject in the conditions match, the watcher should be triggered.
+     * @param keys All keys will be pressed in sequence.
+     */
+    void registerPressKeyskWatcher(String name, Selector[] conditions, String[] keys);
+
+    /**
+     * Removes a previously registered UiWatcher.
+     * @param name Watcher name
+     */
+    void removeWatcher(String name);
+
+    /**
+     * Resets a UiWatcher that has been triggered. If a UiWatcher runs and its checkForCondition() call returned true, then the UiWatcher is considered triggered.
+     */
+    void resetWatcherTriggers();
+
+    /**
+     * Get all registered UiWatchers
+     * @return UiWatcher names
+     */
+    String[] getWatchers();
+
+    /**
      * Simulates a short press using key name.
      * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), voulmn_up, volumn_down, volumn_mute, camera, power
      * @return true if successful, else return false

@@ -5,9 +5,12 @@ import android.os.Environment;
 import android.os.RemoteException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashSet;
 
 import android.view.KeyEvent;
 import com.android.uiautomator.core.*;
+import com.github.uiautomatorstub.watcher.ClickUiObjectWatcher;
+import com.github.uiautomatorstub.watcher.PressKeysWatcher;
 
 
 public class AutomatorServiceImpl implements AutomatorService {
@@ -51,6 +54,8 @@ public class AutomatorServiceImpl implements AutomatorService {
             Log.d(e.getMessage());
         }
     }
+
+    private HashSet<String> watchers = new HashSet<String>();
 
 	public AutomatorServiceImpl() {
 	}
@@ -257,6 +262,91 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean hasWatcherTriggered(String watcherName) {
         return UiDevice.getInstance().hasWatcherTriggered(watcherName);
+    }
+
+    /**
+     * Checks if any registered UiWatcher have triggered.
+     *
+     * @return true if any UiWatcher have triggered else false.
+     */
+    @Override
+    public boolean hasAnyWatcherTriggered() {
+        return UiDevice.getInstance().hasAnyWatcherTriggered();
+    }
+
+    /**
+     * Register a ClickUiObjectWatcher
+     *
+     * @param name       Watcher name
+     * @param conditions If all UiObject in the conditions match, the watcher should be triggered.
+     * @param target     The target UiObject should be clicked if all conditions match.
+     */
+    @Override
+    public void registerClickUiObjectWatcher(String name, Selector[] conditions, Selector target) {
+        if (watchers.contains(name)) {
+            UiDevice.getInstance().removeWatcher(name);
+            watchers.remove(name);
+        }
+
+        UiSelector[] selectors = new UiSelector[conditions.length];
+        for (int i = 0; i < conditions.length; i++) {
+            selectors[i] = conditions[i].toUiSelector();
+        }
+        UiDevice.getInstance().registerWatcher(name, new ClickUiObjectWatcher(selectors, target.toUiSelector()));
+        watchers.add(name);
+    }
+
+    /**
+     * Register a PressKeysWatcher
+     *
+     * @param name       Watcher name
+     * @param conditions If all UiObject in the conditions match, the watcher should be triggered.
+     * @param keys       All keys will be pressed in sequence.
+     */
+    @Override
+    public void registerPressKeyskWatcher(String name, Selector[] conditions, String[] keys) {
+        if (watchers.contains(name)) {
+            UiDevice.getInstance().removeWatcher(name);
+            watchers.remove(name);
+        }
+
+        UiSelector[] selectors = new UiSelector[conditions.length];
+        for (int i = 0; i < conditions.length; i++) {
+            selectors[i] = conditions[i].toUiSelector();
+        }
+        UiDevice.getInstance().registerWatcher(name, new PressKeysWatcher(selectors, keys));
+        watchers.add(name);
+    }
+
+    /**
+     * Removes a previously registered UiWatcher.
+     *
+     * @param name Watcher name
+     */
+    @Override
+    public void removeWatcher(String name) {
+        if (watchers.contains(name)) {
+            UiDevice.getInstance().removeWatcher(name);
+            watchers.remove(name);
+        }
+    }
+
+    /**
+     * Resets a UiWatcher that has been triggered. If a UiWatcher runs and its checkForCondition() call returned true, then the UiWatcher is considered triggered.
+     */
+    @Override
+    public void resetWatcherTriggers() {
+        UiDevice.getInstance().resetWatcherTriggers();
+    }
+
+    /**
+     * Get all registered UiWatchers
+     *
+     * @return UiWatcher names
+     */
+    @Override
+    public String[] getWatchers() {
+        return watchers.toArray(new String[0]);
     }
 
     /**
