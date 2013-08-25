@@ -360,7 +360,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     /**
      * Simulates a short press using key name.
      *
-     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), voulmn_up, volumn_down, volumn_mute, camera, power
+     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), volume_up, volume_down, volume_mute, camera, power
      * @return true if successful, else return false
      * @throws android.os.RemoteException
      */
@@ -392,11 +392,11 @@ public class AutomatorServiceImpl implements AutomatorService {
             result = UiDevice.getInstance().pressDelete();
         else if ("recent".equals(key))
             result = UiDevice.getInstance().pressRecentApps();
-        else if ("volumn_up".equals(key))
+        else if ("volume_up".equals(key))
             result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_UP);
-        else if ("volumn_down".equals(key))
+        else if ("volume_down".equals(key))
             result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_DOWN);
-        else if ("volumn_mute".equals(key))
+        else if ("volume_mute".equals(key))
             result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_MUTE);
         else if ("camera".equals(key))
             result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_CAMERA);

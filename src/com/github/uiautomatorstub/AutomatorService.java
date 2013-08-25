@@ -172,7 +172,7 @@ public interface AutomatorService {
 
     /**
      * Simulates a short press using key name.
-     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), voulmn_up, volumn_down, volumn_mute, camera, power
+     * @param key possible key name is home, back, left, right, up, down, center, menu, search, enter, delete(or del), recent(recent apps), volume_up, volume_down, volume_mute, camera, power
      * @return true if successful, else return false
      * @throws RemoteException
      */
