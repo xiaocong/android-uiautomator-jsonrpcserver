@@ -54,11 +54,11 @@ public class PressKeysWatcher extends SelectorWatcher{
                 } catch (RemoteException e) {
                     Log.d(e.getMessage());
                 }
-            else if ("volumn_up".equals(key))
+            else if ("volume_up".equals(key))
                 UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_UP);
-            else if ("volumn_down".equals(key))
+            else if ("volume_down".equals(key))
                 UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_DOWN);
-            else if ("volumn_mute".equals(key))
+            else if ("volume_mute".equals(key))
                 UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_MUTE);
             else if ("camera".equals(key))
                 UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_CAMERA);
