@@ -31,7 +31,7 @@ Next is a python example using jsonrpclib. Before you run it, make sure install 
 
 ```python
 import jsonrpclib
-server = jsonrpclib.Server('http://localhost:9008/jsonrpc/device')
+server = jsonrpclib.Server('http://localhost:9008/jsonrpc/0')
 
 server.wakeUp()
 server.pressKey("home")
