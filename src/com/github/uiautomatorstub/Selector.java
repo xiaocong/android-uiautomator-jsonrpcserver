@@ -28,8 +28,8 @@ public class Selector {
 	private String   _resourceIdMatches;
 	private int      _index;
 	private int      _instance;
-	private Selector _fromParent;
-	private Selector _childSelector;
+	private Selector[] _childOrSiblingSelector = new Selector[]{};
+	private String[] _childOrSibling = new String[]{};
 
 	private long     _mask;
 
@@ -58,8 +58,6 @@ public class Selector {
 	public static final long MASK_RESOURCEIDMATCHES = 0x400000;
 	public static final long MASK_INDEX = 0x800000;
 	public static final long MASK_INSTANCE = 0x01000000;
-	public static final long MASK_FROMPARENT = 0x02000000;
-	public static final long MASK_CHILDSELECTOR = 0x04000000;
 
 	public UiSelector toUiSelector() {
 		UiSelector s = new UiSelector();
@@ -67,8 +65,6 @@ public class Selector {
 			s = s.clickable(this.isClickable());
 		if ((getMask() & Selector.MASK_CHECKED) > 0)
 			s = s.checked(isChecked());
-		if ((getMask() & Selector.MASK_CHILDSELECTOR) > 0)
-			s = s.childSelector(getChildSelector().toUiSelector());
 		if ((getMask() & Selector.MASK_CLASSNAME) > 0 && android.os.Build.VERSION.SDK_INT >= 17)
 			s = s.className(getClassName());
 		if ((getMask() & Selector.MASK_CLASSNAMEMATCHES) > 0 && android.os.Build.VERSION.SDK_INT >= 17)
@@ -89,8 +85,6 @@ public class Selector {
 			s = s.focusable(isFocusable());
 		if ((getMask() & Selector.MASK_FOCUSED) > 0)
 			s = s.focused(isFocused());
-		if ((getMask() & Selector.MASK_FROMPARENT) > 0)
-			s = s.fromParent(getFromParent().toUiSelector());
 		if ((getMask() & Selector.MASK_INDEX) > 0)
 			s = s.index(getIndex());
 		if ((getMask() & Selector.MASK_INSTANCE) > 0)
@@ -117,6 +111,13 @@ public class Selector {
 			s = s.textStartsWith(getTextStartsWith());
 		if ((getMask() & Selector.MASK_TEXTMATCHES) > 0 && android.os.Build.VERSION.SDK_INT >= 17)
 			s = s.textMatches(getTextMatches());
+
+        for (int i = 0; i < this.getChildOrSibling().length && i < this.getChildOrSiblingSelector().length; i++) {
+            if (this.getChildOrSibling()[i].toLowerCase().equals("child"))
+                s = s.childSelector(getChildOrSiblingSelector()[i].toUiSelector());
+            else if (this.getChildOrSibling()[i].toLowerCase().equals("sibling"))
+                s = s.fromParent((getChildOrSiblingSelector()[i].toUiSelector()));
+        }
 
 		return s;
 	}
@@ -321,27 +322,27 @@ public class Selector {
 		this._instance = _instance;
 	}
 
-	public Selector getFromParent() {
-		return _fromParent;
-	}
-
-	public void setFromParent(Selector _fromParent) {
-		this._fromParent = _fromParent;
-	}
-
-	public Selector getChildSelector() {
-		return _childSelector;
-	}
-
-	public void setChildSelector(Selector _childSelector) {
-		this._childSelector = _childSelector;
-	}
-
 	public long getMask() {
 		return _mask;
 	}
 
 	public void setMask(long _mask) {
 		this._mask = _mask;
-	} 
+	}
+
+    public Selector[] getChildOrSiblingSelector() {
+        return _childOrSiblingSelector;
+    }
+
+    public void setChildOrSiblingSelector(Selector[] _childOrSiblingSelector) {
+        this._childOrSiblingSelector = _childOrSiblingSelector;
+    }
+
+    public String[] getChildOrSibling() {
+        return _childOrSibling;
+    }
+
+    public void setChildOrSibling(String[] _childOrSibling) {
+        this._childOrSibling = _childOrSibling;
+    }
 }
