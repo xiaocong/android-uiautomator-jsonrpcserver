@@ -5,7 +5,8 @@ import android.os.Environment;
 import android.os.RemoteException;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashSet;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import android.view.KeyEvent;
 import com.android.uiautomator.core.*;
@@ -16,11 +17,16 @@ import com.github.uiautomatorstub.watcher.PressKeysWatcher;
 public class AutomatorServiceImpl implements AutomatorService {
 
     final static String STORAGE_PATH = "/data/local/tmp/";
+    private final HashSet<String> watchers = new HashSet<String>();
+    private final ConcurrentHashMap<String, UiObject> uiObjects = new ConcurrentHashMap<String, UiObject>();
+
+	public AutomatorServiceImpl() {
+	}
 
     /**
      * Walk around to avoid backforward compatibility issue on uiautomator between api level 16/17.
      */
-    final static void setAsHorizontalList(UiScrollable obj) {
+    static void setAsHorizontalList(UiScrollable obj) {
         Class noparams[] = {};
         Object nullparmas[] = {};
         try {
@@ -39,7 +45,7 @@ public class AutomatorServiceImpl implements AutomatorService {
     /**
      * Walk around to avoid backforward compatibility issue on uiautomator between api level 16/17.
      */
-    final static void setAsVerticalList(UiScrollable obj) {
+    static void setAsVerticalList(UiScrollable obj) {
         Class noparams[] = {};
         Object nullparmas[] = {};
         try {
@@ -54,11 +60,6 @@ public class AutomatorServiceImpl implements AutomatorService {
             Log.d(e.getMessage());
         }
     }
-
-    private HashSet<String> watchers = new HashSet<String>();
-
-	public AutomatorServiceImpl() {
-	}
 
     /**
      * It's to test if the service is alive.
@@ -283,17 +284,19 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public void registerClickUiObjectWatcher(String name, Selector[] conditions, Selector target) {
-        if (watchers.contains(name)) {
-            UiDevice.getInstance().removeWatcher(name);
-            watchers.remove(name);
-        }
+        synchronized (watchers) {
+            if (watchers.contains(name)) {
+                UiDevice.getInstance().removeWatcher(name);
+                watchers.remove(name);
+            }
 
-        UiSelector[] selectors = new UiSelector[conditions.length];
-        for (int i = 0; i < conditions.length; i++) {
-            selectors[i] = conditions[i].toUiSelector();
+            UiSelector[] selectors = new UiSelector[conditions.length];
+            for (int i = 0; i < conditions.length; i++) {
+                selectors[i] = conditions[i].toUiSelector();
+            }
+            UiDevice.getInstance().registerWatcher(name, new ClickUiObjectWatcher(selectors, target.toUiSelector()));
+            watchers.add(name);
         }
-        UiDevice.getInstance().registerWatcher(name, new ClickUiObjectWatcher(selectors, target.toUiSelector()));
-        watchers.add(name);
     }
 
     /**
@@ -305,17 +308,19 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public void registerPressKeyskWatcher(String name, Selector[] conditions, String[] keys) {
-        if (watchers.contains(name)) {
-            UiDevice.getInstance().removeWatcher(name);
-            watchers.remove(name);
-        }
+        synchronized (watchers) {
+            if (watchers.contains(name)) {
+                UiDevice.getInstance().removeWatcher(name);
+                watchers.remove(name);
+            }
 
-        UiSelector[] selectors = new UiSelector[conditions.length];
-        for (int i = 0; i < conditions.length; i++) {
-            selectors[i] = conditions[i].toUiSelector();
+            UiSelector[] selectors = new UiSelector[conditions.length];
+            for (int i = 0; i < conditions.length; i++) {
+                selectors[i] = conditions[i].toUiSelector();
+            }
+            UiDevice.getInstance().registerWatcher(name, new PressKeysWatcher(selectors, keys));
+            watchers.add(name);
         }
-        UiDevice.getInstance().registerWatcher(name, new PressKeysWatcher(selectors, keys));
-        watchers.add(name);
     }
 
     /**
@@ -325,9 +330,11 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public void removeWatcher(String name) {
-        if (watchers.contains(name)) {
-            UiDevice.getInstance().removeWatcher(name);
-            watchers.remove(name);
+        synchronized (watchers) {
+            if (watchers.contains(name)) {
+                UiDevice.getInstance().removeWatcher(name);
+                watchers.remove(name);
+            }
         }
     }
 
@@ -354,7 +361,9 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public String[] getWatchers() {
-        return watchers.toArray(new String[0]);
+        synchronized (watchers) {
+            return watchers.toArray(new String[watchers.size()]);
+        }
     }
 
     /**
@@ -366,7 +375,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pressKey(String key) throws RemoteException {
-        boolean result = false;
+        boolean result;
         key = key.toLowerCase();
         if ("home".equals(key))
             result = UiDevice.getInstance().pressHome();
@@ -400,10 +409,7 @@ public class AutomatorServiceImpl implements AutomatorService {
             result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_VOLUME_MUTE);
         else if ("camera".equals(key))
             result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_CAMERA);
-        else if ("power".equals(key))
-            result = UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_POWER);
-        else
-            result = false;
+        else result = "power".equals(key) && UiDevice.getInstance().pressKeyCode(KeyEvent.KEYCODE_POWER);
 
         return result;
     }
@@ -547,15 +553,19 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean click(Selector obj, String corner) throws UiObjectNotFoundException {
+        return click(new UiObject(obj.toUiSelector()), corner);
+    }
+
+    private boolean click(UiObject obj, String corner) throws UiObjectNotFoundException {
         if (corner == null)
             corner = "center";
         corner = corner.toLowerCase();
         if ("br".equals(corner) || "bottomright".equals(corner))
-            return new UiObject(obj.toUiSelector()).clickBottomRight();
+            return obj.clickBottomRight();
         else if ("tl".equals(corner) || "topleft".equals(corner))
-            return new UiObject(obj.toUiSelector()).clickTopLeft();
+            return obj.clickTopLeft();
         else  if ("c".equals(corner) || "center".equals(corner))
-            return new UiObject(obj.toUiSelector()).click();
+            return obj.click();
         return false;
     }
 
@@ -600,16 +610,20 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean longClick(Selector obj, String corner) throws UiObjectNotFoundException {
+        return longClick(new UiObject(obj.toUiSelector()), corner);
+    }
+
+    private boolean longClick(UiObject obj, String corner) throws UiObjectNotFoundException {
         if (corner == null)
             corner = "center";
 
         corner = corner.toLowerCase();
         if ("br".equals(corner) || "bottomright".equals(corner))
-            return new UiObject(obj.toUiSelector()).longClickBottomRight();
+            return obj.longClickBottomRight();
         else if ("tl".equals(corner) || "topleft".equals(corner))
-            return new UiObject(obj.toUiSelector()).longClickTopLeft();
+            return obj.longClickTopLeft();
         else if ("c".equals(corner) || "center".equals(corner))
-            return new UiObject(obj.toUiSelector()).longClick();
+            return obj.longClick();
 
         return false;
     }
@@ -628,9 +642,13 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean dragTo(Selector obj, Selector destObj, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return dragTo(new UiObject(obj.toUiSelector()), destObj, steps);
+    }
+
+    private boolean dragTo(UiObject obj, Selector destObj, int steps) throws UiObjectNotFoundException, NotImplementedException {
         if (Build.VERSION.SDK_INT < 18)
             throw new NotImplementedException("dragTo");
-        return new UiObject(obj.toUiSelector()).dragTo(new UiObject(destObj.toUiSelector()), steps);
+        return obj.dragTo(new UiObject(destObj.toUiSelector()), steps);
     }
 
     /**
@@ -648,15 +666,18 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean dragTo(Selector obj, int destX, int destY, int steps) throws UiObjectNotFoundException, NotImplementedException {
-        if (Build.VERSION.SDK_INT < 18)
-            throw new NotImplementedException("dragTo");
-        return new UiObject(obj.toUiSelector()).dragTo(destX, destY, steps);
+        return dragTo(new UiObject(obj.toUiSelector()), destX, destY, steps);
     }
 
+    private boolean dragTo(UiObject obj, int destX, int destY, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException("dragTo");
+        return obj.dragTo(destX, destY, steps);
+    }
     /**
      * Check if view exists. This methods performs a waitForExists(long) with zero timeout. This basically returns immediately whether the view represented by this UiObject exists or not.
      *
-     * @param obj the ui object to be dragged.
+     * @param obj the ui object.
      * @return true if the view represented by this UiObject does exist
      */
     @Override
@@ -692,9 +713,15 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean gesture(Selector obj, Point startPoint1, Point startPoint2, Point endPoint1, Point endPoint2, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return gesture(new UiObject(obj.toUiSelector()),
+                startPoint1, startPoint2,
+                endPoint1, endPoint2, steps);
+    }
+
+    private boolean gesture(UiObject obj, Point startPoint1, Point startPoint2, Point endPoint1, Point endPoint2, int steps) throws UiObjectNotFoundException, NotImplementedException {
         if (Build.VERSION.SDK_INT < 18)
             throw new NotImplementedException("gesture(performTwoPointerGesture)");
-        return new UiObject(obj.toUiSelector()).performTwoPointerGesture(
+        return obj.performTwoPointerGesture(
                 startPoint1.toPoint(), startPoint2.toPoint(),
                 endPoint1.toPoint(), endPoint2.toPoint(), steps);
     }
@@ -713,9 +740,13 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pinchIn(Selector obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return pinchIn(new UiObject(obj.toUiSelector()), percent, steps);
+    }
+
+    private boolean pinchIn(UiObject obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
         if (Build.VERSION.SDK_INT < 18)
             throw new NotImplementedException("pinchIn");
-        return new UiObject(obj.toUiSelector()).pinchIn(percent, steps);
+        return obj.pinchIn(percent, steps);
     }
 
     /**
@@ -732,9 +763,13 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean pinchOut(Selector obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return pinchOut(new UiObject(obj.toUiSelector()), percent, steps);
+    }
+
+    private boolean pinchOut(UiObject obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
         if (Build.VERSION.SDK_INT < 18)
             throw new NotImplementedException("pinchOut");
-        return new UiObject(obj.toUiSelector()).pinchOut(percent, steps);
+        return obj.pinchOut(percent, steps);
     }
 
     /**
@@ -749,8 +784,11 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public boolean swipe(Selector obj, String dir, int steps) throws UiObjectNotFoundException {
+        return swipe(new UiObject(obj.toUiSelector()), dir, steps);
+    }
+
+    private boolean swipe(UiObject item, String dir, int steps) throws UiObjectNotFoundException {
         dir = dir.toLowerCase();
-        UiObject item = new UiObject(obj.toUiSelector());
         boolean result = false;
         if ("u".equals(dir) || "up".equals(dir))
             result = item.swipeUp(steps);
@@ -963,5 +1001,436 @@ public class AutomatorServiceImpl implements AutomatorService {
         else
             setAsHorizontalList(scrollable);
         return scrollable.scrollIntoView(targetObj.toUiSelector());
+    }
+
+
+    /**
+     * Name an UiObject and cache it.
+     * @param obj UiObject
+     * @return the name of the UiObject
+     */
+    private String addUiObject(UiObject obj) {
+        String key = UUID.randomUUID().toString();
+        uiObjects.put(key, obj);
+        // schedule the clear timer.
+        Timer clearTimer = new Timer();
+        clearTimer.schedule(new ClearUiObjectTimerTask(key), 60000);
+        return key;
+    }
+
+    class ClearUiObjectTimerTask extends TimerTask {
+        String name;
+
+        public ClearUiObjectTimerTask(String name) {
+            this.name = name;
+        }
+
+        public void run() {
+            uiObjects.remove(name);
+        }
+    }
+    /**
+     * Searches for child UI element within the constraints of this UiSelector selector. It looks for any child matching the childPattern argument that has a child UI element anywhere within its sub hierarchy that has a text attribute equal to text. The returned UiObject will point at the childPattern instance that matched the search and not at the identifying child element that matched the text attribute.
+     *
+     * @param collection Selector of UiCollection or UiScrollable.
+     * @param text       String of the identifying child contents of of the childPattern
+     * @param child      UiSelector selector of the child pattern to match and return
+     * @return A string ID represent the returned UiObject.
+     */
+    @Override
+    public String childByText(Selector collection, Selector child, String text) throws UiObjectNotFoundException{
+        UiObject obj;
+        if (exist(collection) && objInfo(collection).isScrollable()) {
+            obj = new UiScrollable(collection.toUiSelector()).getChildByText(child.toUiSelector(), text);
+        } else {
+            obj = new UiCollection(collection.toUiSelector()).getChildByText(child.toUiSelector(), text);
+        }
+        return addUiObject(obj);
+    }
+
+    @Override
+    public String childByText(Selector collection, Selector child, String text, boolean allowScrollSearch) throws UiObjectNotFoundException {
+        UiObject obj = new UiScrollable(collection.toUiSelector()).getChildByText(child.toUiSelector(), text, allowScrollSearch);
+        return addUiObject(obj);
+    }
+
+    /**
+     * Searches for child UI element within the constraints of this UiSelector selector. It looks for any child matching the childPattern argument that has a child UI element anywhere within its sub hierarchy that has content-description text. The returned UiObject will point at the childPattern instance that matched the search and not at the identifying child element that matched the content description.
+     *
+     * @param collection Selector of UiCollection or UiScrollable
+     * @param child      UiSelector selector of the child pattern to match and return
+     * @param text       String of the identifying child contents of of the childPattern
+     * @return A string ID represent the returned UiObject.
+     */
+    @Override
+    public String childByDescription(Selector collection, Selector child, String text) throws UiObjectNotFoundException {
+        UiObject obj;
+        if (exist(collection) && objInfo(collection).isScrollable()) {
+            obj = new UiScrollable(collection.toUiSelector()).getChildByDescription(child.toUiSelector(), text);
+        } else {
+            obj = new UiCollection(collection.toUiSelector()).getChildByDescription(child.toUiSelector(), text);
+        }
+        return addUiObject(obj);
+    }
+
+    @Override
+    public String childByDescription(Selector collection, Selector child, String text, boolean allowScrollSearch) throws UiObjectNotFoundException {
+        UiObject obj = new UiScrollable(collection.toUiSelector()).getChildByDescription(child.toUiSelector(), text, allowScrollSearch);
+        return addUiObject(obj);
+    }
+
+    /**
+     * Searches for child UI element within the constraints of this UiSelector. It looks for any child matching the childPattern argument that has a child UI element anywhere within its sub hierarchy that is at the instance specified. The operation is performed only on the visible items and no scrolling is performed in this case.
+     *
+     * @param collection Selector of UiCollection or UiScrollable
+     * @param child      UiSelector selector of the child pattern to match and return
+     * @param instance   int the desired matched instance of this childPattern
+     * @return A string ID represent the returned UiObject.
+     */
+    @Override
+    public String childByInstance(Selector collection, Selector child, int instance) throws UiObjectNotFoundException {
+        UiObject obj;
+        if (exist(collection) && objInfo(collection).isScrollable()) {
+            obj = new UiScrollable(collection.toUiSelector()).getChildByInstance(child.toUiSelector(), instance);
+        } else {
+            obj = new UiCollection(collection.toUiSelector()).getChildByInstance(child.toUiSelector(), instance);
+        }
+        return addUiObject(obj);
+    }
+
+    /**
+     * Creates a new UiObject for a child view that is under the present UiObject.
+     *
+     * @param obj      The ID string represent the parent UiObject.
+     * @param selector UiSelector selector of the child pattern to match and return
+     * @return A string ID represent the returned UiObject.
+     */
+    @Override
+    public String getChild(String obj, Selector selector) throws UiObjectNotFoundException {
+        UiObject ui = uiObjects.get(obj);
+        if (ui != null) {
+            return addUiObject(ui.getChild(selector.toUiSelector()));
+        }
+        return null;
+    }
+
+    /**
+     * Creates a new UiObject for a sibling view or a child of the sibling view, relative to the present UiObject.
+     *
+     * @param obj      The ID string represent the source UiObject.
+     * @param selector for a sibling view or children of the sibling view
+     * @return A string ID represent the returned UiObject.
+     */
+    @Override
+    public String getFromParent(String obj, Selector selector) throws UiObjectNotFoundException {
+        UiObject ui = uiObjects.get(obj);
+        if (ui != null) {
+            return addUiObject(ui.getFromParent(selector.toUiSelector()));
+        }
+        return null;
+    }
+
+    /**
+     * Get a new UiObject from the selector.
+     *
+     * @param selector Selector of the UiObject
+     * @return A string ID represent the returned UiObject.
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public String getUiObject(Selector selector) throws UiObjectNotFoundException {
+        return addUiObject(new UiObject(selector.toUiSelector()));
+    }
+
+    /**
+     * Remove the UiObject from memory.
+     */
+    @Override
+    public void removeUiObject(String obj) {
+        uiObjects.remove(obj);
+    }
+
+    /**
+     * Get all named UiObjects.
+     *
+     * @return all names
+     */
+    @Override
+    public String[] getUiObjects() {
+        Set<String> strings = uiObjects.keySet();
+        return strings.toArray(new String[strings.size()]);
+    }
+
+    private UiObject getUiObject(String name) throws UiObjectNotFoundException{
+        if (uiObjects.containsKey(name)) {
+            return uiObjects.get(name);
+        } else {
+            throw new UiObjectNotFoundException("UiObject " + name + " not found!");
+        }
+    }
+
+    /**
+     * Clears the existing text contents in an editable field. The UiSelector of this object must reference a UI element that is editable. When you call this method, the method first sets focus at the start edge of the field. The method then simulates a long-press to select the existing text, and deletes the selected text. If a "Select-All" option is displayed, the method will automatically attempt to use it to ensure full text selection. Note that it is possible that not all the text in the field is selected; for example, if the text contains separators such as spaces, slashes, at symbol etc. Also, not all editable fields support the long-press functionality.
+     *
+     * @param obj the id of the UiObject.
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public void clearTextField(String obj) throws UiObjectNotFoundException {
+        getUiObject(obj).clearTextField();
+    }
+
+    /**
+     * Reads the text property of the UI element
+     *
+     * @param obj the id of the UiObject.
+     * @return text value of the current node represented by this UiObject
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public String getText(String obj) throws UiObjectNotFoundException {
+        return getUiObject(obj).getText();
+    }
+
+    /**
+     * Sets the text in an editable field, after clearing the field's content. The UiSelector selector of this object must reference a UI element that is editable. When you call this method, the method first simulates a click() on editable field to set focus. The method then clears the field's contents and injects your specified text into the field. If you want to capture the original contents of the field, call getText() first. You can then modify the text and use this method to update the field.
+     *
+     * @param obj  the id of the UiObject.
+     * @param text string to set
+     * @return true if operation is successful
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean setText(String obj, String text) throws UiObjectNotFoundException {
+        return getUiObject(obj).setText(text);
+    }
+
+    /**
+     * Performs a click at the center of the visible bounds of the UI element represented by this UiObject.
+     *
+     * @param obj the id of target ui object.
+     * @return true id successful else false
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean click(String obj) throws UiObjectNotFoundException {
+        return getUiObject(obj).click();
+    }
+
+    /**
+     * Clicks the bottom and right corner or top and left corner of the UI element
+     *
+     * @param obj    the id of target ui object.
+     * @param corner "br"/"bottomright" means BottomRight, "tl"/"topleft" means TopLeft, "center" means Center.
+     * @return true on success
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean click(String obj, String corner) throws UiObjectNotFoundException {
+        return click(getUiObject(obj), corner);
+    }
+
+    /**
+     * Performs a click at the center of the visible bounds of the UI element represented by this UiObject and waits for window transitions. This method differ from click() only in that this method waits for a a new window transition as a result of the click. Some examples of a window transition:
+     * - launching a new activity
+     * - bringing up a pop-up menu
+     * - bringing up a dialog
+     *
+     * @param obj     the id of target ui object.
+     * @param timeout timeout before giving up on waiting for a new window
+     * @return true if the event was triggered, else false
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean clickAndWaitForNewWindow(String obj, long timeout) throws UiObjectNotFoundException {
+        return getUiObject(obj).clickAndWaitForNewWindow(timeout);
+    }
+
+    /**
+     * Long clicks the center of the visible bounds of the UI element
+     *
+     * @param obj the id of target ui object.
+     * @return true if operation was successful
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean longClick(String obj) throws UiObjectNotFoundException {
+        return getUiObject(obj).longClick();
+    }
+
+    /**
+     * Long clicks bottom and right corner of the UI element
+     *
+     * @param obj    the id of target ui object.
+     * @param corner "br"/"bottomright" means BottomRight, "tl"/"topleft" means TopLeft, "center" means Center.
+     * @return true if operation was successful
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean longClick(String obj, String corner) throws UiObjectNotFoundException {
+        return longClick(getUiObject(obj), corner);
+    }
+
+    /**
+     * Drags this object to a destination UiObject. The number of steps specified in your input parameter can influence the drag speed, and varying speeds may impact the results. Consider evaluating different speeds when using this method in your tests.
+     *
+     * @param obj     the id of ui object to be dragged.
+     * @param destObj the ui object to be dragged to.
+     * @param steps   usually 40 steps. You can increase or decrease the steps to change the speed.
+     * @return true if successful
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     * @throws com.github.uiautomatorstub.NotImplementedException
+     *
+     */
+    @Override
+    public boolean dragTo(String obj, Selector destObj, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return dragTo(getUiObject(obj), destObj, steps);
+    }
+
+    /**
+     * Drags this object to arbitrary coordinates. The number of steps specified in your input parameter can influence the drag speed, and varying speeds may impact the results. Consider evaluating different speeds when using this method in your tests.
+     *
+     * @param obj   the id of ui object to be dragged.
+     * @param destX the X-axis coordinate of destination.
+     * @param destY the Y-axis coordinate of destination.
+     * @param steps usually 40 steps. You can increase or decrease the steps to change the speed.
+     * @return true if successful
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     * @throws com.github.uiautomatorstub.NotImplementedException
+     *
+     */
+    @Override
+    public boolean dragTo(String obj, int destX, int destY, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return dragTo(getUiObject(obj), destX, destY, steps);
+    }
+
+    /**
+     * Check if view exists. This methods performs a waitForExists(long) with zero timeout. This basically returns immediately whether the view represented by this UiObject exists or not.
+     *
+     * @param obj the id of ui object.
+     * @return true if the view represented by this UiObject does exist
+     */
+    @Override
+    public boolean exist(String obj) {
+        try {
+            return getUiObject(obj).exists();
+        } catch (UiObjectNotFoundException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Get the object info.
+     *
+     * @param obj the id of target ui object.
+     * @return object info.
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public ObjInfo objInfo(String obj) throws UiObjectNotFoundException {
+        return ObjInfo.getObjInfo(getUiObject(obj));
+    }
+
+    /**
+     * Generates a two-pointer gesture with arbitrary starting and ending points.
+     *
+     * @param obj         the id of target ui object. ??
+     * @param startPoint1 start point of pointer 1
+     * @param startPoint2 start point of pointer 2
+     * @param endPoint1   end point of pointer 1
+     * @param endPoint2   end point of pointer 2
+     * @param steps       the number of steps for the gesture. Steps are injected about 5 milliseconds apart, so 100 steps may take around 0.5 seconds to complete.
+     * @return true if all touch events for this gesture are injected successfully, false otherwise
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean gesture(String obj, Point startPoint1, Point startPoint2, Point endPoint1, Point endPoint2, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return gesture(getUiObject(obj), startPoint1, startPoint2, endPoint1, endPoint2, steps);
+    }
+
+    /**
+     * Performs a two-pointer gesture, where each pointer moves diagonally toward the other, from the edges to the center of this UiObject .
+     *
+     * @param obj     the id of target ui object.
+     * @param percent percentage of the object's diagonal length for the pinch gesture
+     * @param steps   the number of steps for the gesture. Steps are injected about 5 milliseconds apart, so 100 steps may take around 0.5 seconds to complete.
+     * @return true if all touch events for this gesture are injected successfully, false otherwise
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     * @throws com.github.uiautomatorstub.NotImplementedException
+     *
+     */
+    @Override
+    public boolean pinchIn(String obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return pinchIn(getUiObject(obj), percent, steps);
+    }
+
+    /**
+     * Performs a two-pointer gesture, where each pointer moves diagonally opposite across the other, from the center out towards the edges of the this UiObject.
+     *
+     * @param obj     the id of target ui object.
+     * @param percent percentage of the object's diagonal length for the pinch gesture
+     * @param steps   the number of steps for the gesture. Steps are injected about 5 milliseconds apart, so 100 steps may take around 0.5 seconds to complete.
+     * @return true if all touch events for this gesture are injected successfully, false otherwise
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     * @throws com.github.uiautomatorstub.NotImplementedException
+     *
+     */
+    @Override
+    public boolean pinchOut(String obj, int percent, int steps) throws UiObjectNotFoundException, NotImplementedException {
+        return pinchOut(getUiObject(obj), percent, steps);
+    }
+
+    /**
+     * Performs the swipe up/down/left/right action on the UiObject
+     *
+     * @param obj   the id of target ui object.
+     * @param dir   "u"/"up", "d"/"down", "l"/"left", "r"/"right"
+     * @param steps indicates the number of injected move steps into the system. Steps are injected about 5ms apart. So a 100 steps may take about 1/2 second to complete.
+     * @return true of successful
+     * @throws com.android.uiautomator.core.UiObjectNotFoundException
+     *
+     */
+    @Override
+    public boolean swipe(String obj, String dir, int steps) throws UiObjectNotFoundException {
+        return swipe(getUiObject(obj), dir, steps);
+    }
+
+    /**
+     * Waits a specified length of time for a view to become visible. This method waits until the view becomes visible on the display, or until the timeout has elapsed. You can use this method in situations where the content that you want to select is not immediately displayed.
+     *
+     * @param obj     the id of target ui object
+     * @param timeout time to wait (in milliseconds)
+     * @return true if the view is displayed, else false if timeout elapsed while waiting
+     */
+    @Override
+    public boolean waitForExists(String obj, long timeout) throws UiObjectNotFoundException {
+        return getUiObject(obj).waitForExists(timeout);
+    }
+
+    /**
+     * Waits a specified length of time for a view to become undetectable. This method waits until a view is no longer matchable, or until the timeout has elapsed. A view becomes undetectable when the UiSelector of the object is unable to find a match because the element has either changed its state or is no longer displayed. You can use this method when attempting to wait for some long operation to compete, such as downloading a large file or connecting to a remote server.
+     *
+     * @param obj     the id of target ui object
+     * @param timeout time to wait (in milliseconds)
+     * @return true if the element is gone before timeout elapsed, else false if timeout elapsed but a matching element is still found.
+     */
+    @Override
+    public boolean waitUntilGone(String obj, long timeout) throws UiObjectNotFoundException {
+        return getUiObject(obj).waitUntilGone(timeout);
     }
 }

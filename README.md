@@ -38,7 +38,7 @@ server.pressKey("home")
 server.pressKey("back")
 ```
 
-For convenicence, you can intall its python wrapper library [uiautomator](/xiaocong/uiautomator).
+For convenicence, you can intall its python wrapper library [uiautomator](https://github.com/xiaocong/uiautomator).
 
 # Notes
 
