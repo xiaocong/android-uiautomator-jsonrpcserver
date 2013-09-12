@@ -699,6 +699,71 @@ public class AutomatorServiceImpl implements AutomatorService {
     }
 
     /**
+     * Get the count of the UiObject instances by the selector
+     *
+     * @param obj the selector of the ui object
+     * @return the count of instances.
+     */
+    @Override
+    public int count(Selector obj) {
+        if ((obj.getMask() & Selector.MASK_INSTANCE) > 0) {
+            if (new UiObject(obj.toUiSelector()).exists())
+                return 1;
+            else
+                return 0;
+        } else {
+            UiSelector sel = obj.toUiSelector();
+            if (! new UiObject(sel).exists())
+                return 0;
+            int low = 1;
+            int high = 2;
+            sel = sel.instance(high - 1);
+            while (new UiObject(sel).exists()) {
+                low = high;
+                high = high * 2;
+                sel = sel.instance(high - 1);
+            }
+            while (high > low + 1) {
+                int mid = (low + high)/2;
+                sel = sel.instance(mid - 1);
+                if (new UiObject(sel).exists())
+                    low = mid;
+                else
+                    high = mid;
+            }
+            return low;
+        }
+    }
+
+    /**
+     * Get the info of all instance by the selector.
+     *
+     * @param obj the selector of ui object.
+     * @return array of object info.
+     *
+     */
+    @Override
+    public ObjInfo[] objInfoOfAllInstances(Selector obj) {
+        int total = count(obj);
+        ObjInfo objs [] = new ObjInfo[total];
+        if ((obj.getMask() & Selector.MASK_INSTANCE) > 0 && total > 0) {
+            try {
+                objs[0] = objInfo(obj);
+            } catch (UiObjectNotFoundException e) {
+            }
+        } else {
+            UiSelector sel = obj.toUiSelector();
+            for (int i = 0; i < total; i++) {
+                try {
+                    objs[i] = ObjInfo.getObjInfo(sel.instance(i));
+                } catch (UiObjectNotFoundException e) {
+                }
+            }
+        }
+        return objs;
+    }
+
+    /**
      * Generates a two-pointer gesture with arbitrary starting and ending points.
      *
      * @param obj         the target ui object. ??

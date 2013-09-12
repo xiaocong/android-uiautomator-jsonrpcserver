@@ -355,6 +355,20 @@ public interface AutomatorService {
     ObjInfo objInfo(Selector obj) throws UiObjectNotFoundException;
 
     /**
+     * Get the count of the UiObject instances by the selector
+     * @param obj the selector of the ui object
+     * @return the count of instances.
+     */
+    int count(Selector obj);
+
+    /**
+     * Get the info of all instance by the selector.
+     * @param obj the selector of ui object.
+     * @return array of object info.
+     */
+    ObjInfo[] objInfoOfAllInstances(Selector obj);
+
+    /**
      * Generates a two-pointer gesture with arbitrary starting and ending points.
      * @param obj the target ui object. ??
      * @param startPoint1	start point of pointer 1
