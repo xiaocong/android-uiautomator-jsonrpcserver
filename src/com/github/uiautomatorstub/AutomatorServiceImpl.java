@@ -68,6 +68,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public String ping() {
+        new UiObject(new UiSelector()).exists();  // here we call the method just for checking if the UiAutomationService is ok, else it will throw IllegalStateException.
         return "pong";
     }
 
