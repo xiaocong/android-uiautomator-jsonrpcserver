@@ -3,7 +3,8 @@ package com.github.uiautomatorstub;
 import android.os.Build;
 import android.os.Environment;
 import android.os.RemoteException;
-import java.io.File;
+
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,7 +17,7 @@ import com.github.uiautomatorstub.watcher.PressKeysWatcher;
 
 public class AutomatorServiceImpl implements AutomatorService {
 
-    final static String STORAGE_PATH = "/data/local/tmp/";
+    final public static String STORAGE_PATH = "/data/local/tmp/";
     private final HashSet<String> watchers = new HashSet<String>();
     private final ConcurrentHashMap<String, UiObject> uiObjects = new ConcurrentHashMap<String, UiObject>();
 
@@ -142,14 +143,44 @@ public class AutomatorServiceImpl implements AutomatorService {
         File parent = new File(Environment.getDataDirectory(), "local/tmp"); // Environment.getDataDirectory() return /data/local/tmp in android 4.3 but not expected /data
         if (!parent.exists())
             parent.mkdirs();
+        boolean return_value = false;
+        if (filename == null || filename == "") {
+            filename = "dump.xml";
+            return_value = true;
+        }
         File dumpFile = new File(parent, filename).getAbsoluteFile();
         UiDevice.getInstance().dumpWindowHierarchy(filename);
-        File f = new File(STORAGE_PATH, filename); // It should be this...
-        if (f.exists())
-            return f.getAbsolutePath();
-        else if (dumpFile.exists())
-            return dumpFile.getAbsolutePath();
-        else
+        File f = new File(STORAGE_PATH, filename); // It should be this one, but in Android4.3, it is "/data/local/tmp/local/tmp"......
+        if (!f.exists()) f = dumpFile;
+        if (f.exists()) {
+            if (return_value) {
+                BufferedReader reader = null;
+                try {
+                    StringBuilder sb = new StringBuilder();
+                    reader = new BufferedReader(new FileReader(f));
+                    char[] buffer = new char[4096];
+                    int len = 0;
+                    while ((len = reader.read(buffer)) != -1) {
+                        sb.append(new String(buffer, 0, len));
+                    }
+                    reader.close();
+                    reader = null;
+                    return sb.toString();
+                } catch (IOException e) {
+                    Log.e(e.toString());
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                            reader = null;
+                        } catch (IOException e1) {
+                        }
+                    }
+                }
+                return null;
+            } else
+                return f.getAbsolutePath();
+        } else
             return null;
     }
 
