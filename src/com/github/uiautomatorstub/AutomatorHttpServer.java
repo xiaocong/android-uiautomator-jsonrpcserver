@@ -31,7 +31,7 @@ public class AutomatorHttpServer extends NanoHTTPD {
         if ("/stop".equals(uri)) {
             stop();
             return new Response("Server stopped!!!");
-        } else if ("/api/screenshot".equals(uri)) {
+        } else if ("/0/screenshot".equals(uri)) {
             if (Build.VERSION.SDK_INT < 17)
                 return new Response(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "API level less than 17.");
             File f = new File(AutomatorServiceImpl.STORAGE_PATH, "screenshot.png");
