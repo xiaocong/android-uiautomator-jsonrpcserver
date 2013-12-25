@@ -62,11 +62,11 @@ public class Selector {
 	public UiSelector toUiSelector() {
 		UiSelector s = new UiSelector();
 		if ((getMask() & Selector.MASK_CHECKABLE) > 0 && android.os.Build.VERSION.SDK_INT >= 18)
-			s = s.clickable(this.isClickable());
+			s = s.checkable(this.isCheckable());
 		if ((getMask() & Selector.MASK_CHECKED) > 0)
 			s = s.checked(isChecked());
-		if ((getMask() & Selector.MASK_CLASSNAME) > 0 && android.os.Build.VERSION.SDK_INT >= 17)
-			s = s.className(getClassName());
+		if ((getMask() & Selector.MASK_CLASSNAME) > 0)
+			s = s.className(getClassName()); // API level 16 should support it.... wrong in Android Java Doc
 		if ((getMask() & Selector.MASK_CLASSNAMEMATCHES) > 0 && android.os.Build.VERSION.SDK_INT >= 17)
 			s = s.classNameMatches(getClassNameMatches());
 		if ((getMask() & Selector.MASK_CLICKABLE) > 0)
