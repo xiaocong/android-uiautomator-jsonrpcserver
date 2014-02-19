@@ -69,7 +69,7 @@ public class AutomatorServiceImpl implements AutomatorService {
      */
     @Override
     public String ping() {
-        new UiObject(new UiSelector()).exists();  // here we call the method just for checking if the UiAutomationService is ok, else it will throw IllegalStateException.
+        //new UiObject(new UiSelector()).exists();  // here we call the method just for checking if the UiAutomationService is ok, else it will throw IllegalStateException.
         return "pong";
     }
 
@@ -1529,5 +1529,34 @@ public class AutomatorServiceImpl implements AutomatorService {
     @Override
     public boolean waitUntilGone(String obj, long timeout) throws UiObjectNotFoundException {
         return getUiObject(obj).waitUntilGone(timeout);
+    }
+
+    /**
+     * Get Configurator
+     *
+     * @return Configurator information.
+     * @throws com.github.uiautomatorstub.NotImplementedException
+     */
+    @Override
+    public ConfiguratorInfo getConfigurator() throws NotImplementedException {
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException();
+
+        return new ConfiguratorInfo();
+    }
+
+    /**
+     * Set Configurator.
+     *
+     * @param info the configurator information to be set.
+     * @throws com.github.uiautomatorstub.NotImplementedException
+     */
+    @Override
+    public ConfiguratorInfo setConfigurator(ConfiguratorInfo info) throws NotImplementedException {
+        if (Build.VERSION.SDK_INT < 18)
+            throw new NotImplementedException();
+
+        ConfiguratorInfo.setConfigurator(info);
+        return new ConfiguratorInfo();
     }
 }
