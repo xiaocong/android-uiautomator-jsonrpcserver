@@ -805,4 +805,20 @@ public interface AutomatorService {
      */
     @JsonRpcErrors({@JsonRpcError(exception=UiObjectNotFoundException.class, code=ERROR_CODE_BASE-2)})
     boolean waitUntilGone (String obj, long timeout) throws UiObjectNotFoundException;
+
+    /**
+     * Get Configurator
+     * @return Configurator information.
+     * @throws NotImplementedException
+     */
+    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
+    ConfiguratorInfo getConfigurator() throws NotImplementedException;
+
+    /**
+     * Set Configurator.
+     * @param info the configurator information to be set.
+     * @throws NotImplementedException
+     */
+    @JsonRpcErrors({@JsonRpcError(exception=NotImplementedException.class, code=ERROR_CODE_BASE-3)})
+    ConfiguratorInfo setConfigurator(ConfiguratorInfo info) throws NotImplementedException;
 }
