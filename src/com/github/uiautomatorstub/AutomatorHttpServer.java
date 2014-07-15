@@ -58,7 +58,13 @@ public class AutomatorHttpServer extends NanoHTTPD {
             }
         } else if (router.containsKey(uri)) {
             JsonRpcServer jsonRpcServer = router.get(uri);
-            ByteArrayInputStream is = new ByteArrayInputStream(params.get("NanoHttpd.QUERY_STRING").getBytes());
+            ByteArrayInputStream is = null;
+            if (params.get("NanoHttpd.QUERY_STRING") != null)
+                is = new ByteArrayInputStream(params.get("NanoHttpd.QUERY_STRING").getBytes());
+            else if (files.get("postData") != null)
+                is = new ByteArrayInputStream(files.get("postData").getBytes());
+            else
+                return new Response(Response.Status.INTERNAL_ERROR, MIME_PLAINTEXT, "Invalid http post data!");
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             try {
                 jsonRpcServer.handle(is, os);
