@@ -18,7 +18,7 @@ public class ObjInfo {
 		this._bounds = Rect.from(obj.getBounds());
 		this._checkable = obj.isCheckable();
 		this._checked = obj.isChecked();
-		this._chileCount = obj.getChildCount();
+		this._childCount = obj.getChildCount();
 		this._clickable = obj.isClickable();
 		this._contentDescription = obj.getContentDescription();
 		this._enabled = obj.isEnabled();
@@ -39,7 +39,7 @@ public class ObjInfo {
 
 	private Rect _bounds;
 	private Rect _visibleBounds;
-	private int _chileCount;
+	private int _childCount;
 	private String _className;
 	private String _contentDescription;
 	private String _packageName;
@@ -70,12 +70,12 @@ public class ObjInfo {
 		this._visibleBounds = visibleBounds;
 	}
 
-	public int getChileCount() {
-		return _chileCount;
+	public int getChildCount() {
+		return _childCount;
 	}
 
-	public void setChileCount(int chileCount) {
-		this._chileCount = chileCount;
+	public void setChildCount(int childCount) {
+		this._childCount = childCount;
 	}
 
 	public String getClassName() {
