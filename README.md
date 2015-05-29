@@ -1,3 +1,5 @@
+# It's moved to [android-uiautomator-server](https://github.com/xiaocong/android-uiautomator-server), which is based on android suppot library.
+
 # Purpose
 
 [UIAutomator](http://developer.android.com/tools/testing/testing_ui.html) is a
